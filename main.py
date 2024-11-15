@@ -21,4 +21,6 @@ def func():
 
     elif inp == '5':
         print("release")
+    else:
+        print("incvalid choice")
 func()
