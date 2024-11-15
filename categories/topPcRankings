@@ -1,1 +1,60 @@
+import requests
+from bs4 import BeautifulSoup
+import sqlite3
 
+def create_database():
+
+    cursor.execute("""CREATE TABLE IF NOT EXISTS data (
+                   id INTEGER PRIMARY KEY AUTOINCREMENT,
+                   name TEXT,
+                   rating TEXT,
+                   description TEXT
+                   );""")
+    conn.commit()
+
+
+conn = sqlite3.connect('TopPcGames.db')
+cursor = conn.cursor()
+
+def scrape_top_pc_games():
+
+    proxies = {
+        'http': 'http://xzydnadr-rotate:ki43ylw99smr@p.webshare.io:80',
+        'https': 'http://xzydnadr-rotate:ki43ylw99smr@p.webshare.io:80'
+    }
+
+    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
+
+    base_url = "https://www.metacritic.com/browse/game/pc/all/all-time/metascore/?releaseYearMin=2001&releaseYearMax=2024&platform=pc&page="
+    page = 1
+
+    while True:
+        url = f"{base_url}{page}"
+        r = requests.get(url, headers=headers, proxies=proxies)
+        soup = BeautifulSoup(r.text, 'html.parser')
+
+        titles = soup.find_all("h3", class_="c-finderProductCard_titleHeading")
+        ratings = soup.find_all(class_="c-siteReviewScore")
+        descriptions = soup.find_all("div", class_="c-finderProductCard_description")
+
+        if not titles:
+            conn.commit()
+            break  
+
+        for title, rating, description in zip(titles, ratings, descriptions):
+
+            title = title.text.strip()
+            rating = rating.text.strip()
+            description = description.text.strip()
+            
+            cursor.execute("INSERT INTO data (name, rating, description) VALUES(?, ?, ?)", (title, rating, description))
+            conn.commit()
+
+        page += 1
+
+if __name__ == "__main__":
+    conn, cursor = create_database()
+    try:
+        scrape_top_pc_games(conn, cursor)
+    finally:
+        conn.close()
