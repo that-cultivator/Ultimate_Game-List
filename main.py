@@ -1,3 +1,7 @@
+from categories.topPcRankings import scrape_top_pc_games, create_database
+
+
+
 print("\n1. Trending PC Games")
 print("2. Top PC Titles")
 print("3. Top xbox Titles")
@@ -10,7 +14,8 @@ def func():
         print("Trending")
 
     elif inp == '2':
-        print("Trending games")
+        create_database()
+        scrape_top_pc_games()
 
     elif inp == '3':
         print("pc")
